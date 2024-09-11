@@ -184,5 +184,7 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
+    
+    'google_maps_api_key' => env('GOOGLE_MAPS_API_KEY'),
 
 ];

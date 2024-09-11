@@ -24,21 +24,21 @@ class LocationController extends Controller
         $latitude = $request->input('latitude');
         $longitude = $request->input('longitude');
         
-        $ramens = Location::select('locations.*')
-            ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS calculated_distance', [$latitude, $longitude, $latitude])
-            ->with(['shops' => function($query) {
-                $query->select('id', 'location_id', 'name', 'open_time', 'close_time', 'min_price', 'max_price', 'review_avg')
-                    ->with(['shop_category:id,name']);
-            }])
+        $ramens = Location::select('subquery.*')  // サブクエリからすべてのカラムを取得
             ->fromSub(function ($query) use ($latitude, $longitude) {
                 $query->select('locations.*')
                     ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS calculated_distance', [$latitude, $longitude, $latitude])
                     ->from('locations');
-            }, 'locations')
-            ->where('calculated_distance', '<', 100)
-            ->orderBy('calculated_distance')  // 修正: calculated_distance で並び替え
+            }, 'subquery')  // サブクエリにエイリアスを付ける
+            ->where('subquery.calculated_distance', '<', 100)  // サブクエリのカラムを明示的に参照
+            ->orderBy('subquery.calculated_distance')  // サブクエリのカラムを明示的に参照
             ->limit(4)
+            ->with(['shops' => function($query) {
+                $query->select('id', 'location_id', 'name', 'open_time', 'close_time', 'min_price', 'max_price', 'review_avg')
+                    ->with(['shop_category:id,name']);
+            }])
             ->get();
+
         
         $result = $ramens->map(function($ramen) {
             return [

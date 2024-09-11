@@ -97,7 +97,7 @@
                         icon: 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png',
                     });
 
-                    fetch('/distance', {
+                    fetch('https://like-test-f6022f288d49.herokuapp.com/distance', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -162,9 +162,6 @@
         };
 
         function highlightLocation(lat, lng) {
-            // 私が追加した部分
-            // lat = parseFloat(lat);
-            // lng = parseFloat(lng);
             
             // すべてのマーカーの色を元に戻す
             markers.forEach(marker => marker.setIcon(null));

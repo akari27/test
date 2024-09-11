@@ -39,7 +39,7 @@ class LocationController extends Controller
             }])
             ->get();
             
-        dd($ramens);
+        // dd($ramens);
 
         
         $result = $ramens->map(function($ramen) {

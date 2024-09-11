@@ -134,7 +134,7 @@
                                     <p>営業時間: ${shop.open_time || ''} - ${shop.close_time || ''}</p>
                                     <p>料金: ¥${shop.min_price || ''} - ¥${shop.max_price || ''}</p>
                                     <p>住所: ${ramen.address || ''}</p> <!-- 住所情報 -->
-                                    <p>距離: ${ramen.distance.toFixed(2)} km</p> <!-- 距離情報（小数点以下2桁） -->
+                                    <p>距離: ${ramen.distance} km</p>
                                     <a href="/shops/${shop.id}">詳細ページへ</a><br>
                                     <button onclick="highlightLocation(${ramen.latitude}, ${ramen.longitude})">位置を見る</button>
                                 `;

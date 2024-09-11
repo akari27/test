@@ -61,28 +61,69 @@ class LocationController extends Controller
     //     return response()->json($result);
     // }
     
-    public function getNearRamen(Request $request) {
+    // public function getNearRamen(Request $request) {
+    //     $latitude = $request->input('latitude');
+    //     $longitude = $request->input('longitude');
+        
+    //     $ramens = Location::select('locations.*')
+    //         ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$latitude, $longitude, $latitude])
+    //         ->with(['shops' => function($query) {
+    //             $query->select('id', 'location_id', 'name', 'open_time', 'close_time', 'min_price', 'max_price', 'review_avg')
+    //                 ->with(['shop_category:id,name']);
+    //         }])
+    //         ->having('distance', '<', 100)
+    //         ->orderBy('distance')
+    //         ->limit(4)
+    //         ->get();
+        
+    //     $result = $ramens->map(function($ramen) {
+    //         return [
+    //             'latitude' => (float)$ramen->latitude,
+    //             'longitude' => (float)$ramen->longitude,
+    //             'distance' => $ramen->distance,
+    //             'address' => $ramen->address,
+    //             'shops' => $ramen->shops->map(function($shop) {
+    //                 return [
+    //                     'id' => $shop->id,
+    //                     'name' => $shop->name,
+    //                     'open_time' => $shop->open_time,
+    //                     'close_time' => $shop->close_time,
+    //                     'min_price' => $shop->min_price,
+    //                     'max_price' => $shop->max_price,
+    //                     'review_avg' => $shop->review_avg,
+    //                     'category_name' => $shop->shop_category->name ?? '未分類',
+    //                 ];
+    //             }),
+    //         ];
+    //     });
+        
+    //     return response()->json($result);
+    // }
+    public function getNearRamen(Request $request)
+    {
         $latitude = $request->input('latitude');
         $longitude = $request->input('longitude');
         
+        // earthdistance拡張機能を使用
         $ramens = Location::select('locations.*')
-            ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$latitude, $longitude, $latitude])
-            ->with(['shops' => function($query) {
-                $query->select('id', 'location_id', 'name', 'open_time', 'close_time', 'min_price', 'max_price', 'review_avg')
-                    ->with(['shop_category:id,name']);
-            }])
-            ->having('distance', '<', 100)
+            ->selectRaw('earth_distance(ll_to_earth(?, ?), ll_to_earth(latitude, longitude)) as distance', [$latitude, $longitude])
+            ->whereRaw('earth_box(ll_to_earth(?, ?), 100000) @> ll_to_earth(latitude, longitude)', [$latitude, $longitude])
             ->orderBy('distance')
             ->limit(4)
             ->get();
-        
+    
         $result = $ramens->map(function($ramen) {
+            $shops = $ramen->shops()
+                ->select('id', 'location_id', 'name', 'open_time', 'close_time', 'min_price', 'max_price', 'review_avg')
+                ->with('shop_category:id,name')
+                ->get();
+    
             return [
                 'latitude' => (float)$ramen->latitude,
                 'longitude' => (float)$ramen->longitude,
                 'distance' => $ramen->distance,
                 'address' => $ramen->address,
-                'shops' => $ramen->shops->map(function($shop) {
+                'shops' => $shops->map(function($shop) {
                     return [
                         'id' => $shop->id,
                         'name' => $shop->name,
@@ -96,7 +137,7 @@ class LocationController extends Controller
                 }),
             ];
         });
-        
+    
         return response()->json($result);
     }
 }

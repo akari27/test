@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @csrf_token
 
     <title>Search</title>
 
@@ -97,7 +97,7 @@
                         icon: 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png',
                     });
 
-                    fetch('https://like-test-f6022f288d49.herokuapp.com/distance', {
+                    fetch('/distance', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

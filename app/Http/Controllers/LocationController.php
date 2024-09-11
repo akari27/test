@@ -38,6 +38,8 @@ class LocationController extends Controller
                     ->with(['shop_category:id,name']);
             }])
             ->get();
+            
+        dd($ramens);
 
         
         $result = $ramens->map(function($ramen) {

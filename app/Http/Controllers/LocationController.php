@@ -27,11 +27,11 @@ class LocationController extends Controller
         $ramens = Location::select('subquery.*')  // サブクエリからすべてのカラムを取得
             ->fromSub(function ($query) use ($latitude, $longitude) {
                 $query->select('locations.*')
-                    ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS calculated_distance', [$latitude, $longitude, $latitude])
+                    ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$latitude, $longitude, $latitude])
                     ->from('locations');
             }, 'subquery')  // サブクエリにエイリアスを付ける
-            ->where('subquery.calculated_distance', '<', 100)  // サブクエリのカラムを明示的に参照
-            ->orderBy('subquery.calculated_distance')  // サブクエリのカラムを明示的に参照
+            ->where('subquery.distance', '<', 100)  // サブクエリのカラムを明示的に参照
+            ->orderBy('subquery.distance')  // サブクエリのカラムを明示的に参照
             ->limit(4)
             ->with(['shops' => function($query) {
                 $query->select('id', 'location_id', 'name', 'open_time', 'close_time', 'min_price', 'max_price', 'review_avg')
